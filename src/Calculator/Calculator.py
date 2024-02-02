@@ -1,4 +1,4 @@
-import CurrencyDataSource
+from Api import CurrencyDataSource
 
 
 class Calculator:

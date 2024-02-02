@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import Mock, patch
 import sys
-from src.Console import Console
-from src.Calculator import Calculator
+from Console.Console import Console
+from Calculator.Calculator import Calculator
 
 
 class TestConsole(unittest.TestCase):
