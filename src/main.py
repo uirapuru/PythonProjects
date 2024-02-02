@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-from src.Console import Console
-from src.NBPApiAdapter import NBPApiAdapter
-from src.Calculator import Calculator
+from Console.Console import Console
+from Api.NBPApiAdapter import NBPApiAdapter
+from Calculator.Calculator import Calculator
 
 
 def main():

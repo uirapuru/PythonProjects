@@ -1,8 +1,6 @@
-import json
 import os
-import sys
 
-from Currency import Currency
+from Enum.Currency import Currency
 
 
 def get_currencies(currency_arg):
