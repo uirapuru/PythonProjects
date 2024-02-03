@@ -34,18 +34,3 @@ class NBPApiAdapter(CurrencyDataSource):
                 raise Exception(f"Błąd API: {e}")
 
         raise Exception("Nie udało się pobrać kursu po 3 próbach.")
-
-
-
-
-
-        url = f"{self.api_url}exchangerates/rates/a/{currency.lower()}/{date}/?format=json"
-        response = requests.get(url)
-
-        print(url)
-
-        if response.status_code != 200:
-            raise Exception(f"Błąd API: {response.status_code}")
-
-        data = response.json()
-        return data['rates'][0]['mid']
