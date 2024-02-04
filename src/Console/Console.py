@@ -11,7 +11,22 @@ from Console.write_output_or_print import write_output_or_print
 
 
 class Console:
+    """
+    Klasa Console służy do interaktywnego obliczania różnic walutowych dla faktur
+    oraz opcjonalnego zapisu wyników do pliku.
+
+    Attributes:
+        calculator (Calculator): Obiekt kalkulatora używany do obliczeń.
+        parser (ArgumentParser): Parser argumentów linii poleceń.
+    """
+
     def __init__(self, calculator):
+        """
+        Inicjalizuje konsolę z podanym kalkulatorem.
+
+        Args:
+            calculator (Calculator): Obiekt kalkulatora używany do obliczeń.
+        """
         self.calculator = calculator
         self.parser = argparse.ArgumentParser(description='Obliczanie różnic walutowych dla faktur')
         self._setup_arguments()
@@ -22,6 +37,13 @@ class Console:
         self.parser.add_argument('--currencies', '-c', type=str, help='Dozwolone waluty po przecinku')
 
     def run_interactive_mode(self):
+        """
+        Uruchamia tryb interaktywny, pozwalając użytkownikowi na wprowadzenie danych faktury i płatności,
+        a następnie oblicza różnicę walutową i opcjonalnie zapisuje wynik.
+
+        Returns:
+            dict: Słownik zawierający dane wejściowe użytkownika i wynik obliczeń.
+        """
         print("Uruchomiono tryb interaktywny.")
         try:
             invoice_amount = validate_amount(input("Podaj kwotę na fakturze: "))
@@ -54,6 +76,10 @@ class Console:
             return {}
 
     def run(self):
+        """
+        Główna metoda uruchamiająca logikę programu. Przetwarza argumenty linii poleceń
+        lub uruchamia tryb interaktywny, jeśli nie podano argumentów.
+        """
         args = self.parser.parse_args()
 
         if len(sys.argv) == 1:
@@ -87,6 +113,14 @@ class Console:
             print(f"Wystąpił błąd podczas odczytu pliku: {e}", file=sys.stderr)
 
     def process_row(self, row, args, currencies):
+        """
+        Przetwarza pojedynczy wiersz danych, obliczając różnice walutowe i zapisując lub wypisując wynik.
+
+        Args:
+            row (list): Wiersz danych do przetworzenia.
+            args (Namespace): Argumenty linii poleceń.
+            currencies (set): Zestaw dozwolonych walut.
+        """
         if row[4].upper() not in currencies:
             print(f"Pomijanie waluty: {row[4]} (dozwolone waluty to: {currencies})")
             return
