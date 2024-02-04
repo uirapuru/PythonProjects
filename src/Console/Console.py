@@ -74,11 +74,11 @@ class Console:
                     float(column_names[0])
 
                     for row in [column_names] + list(reader):
-                        self.process_row(row, args)
+                        self.process_row(row, args, currencies)
 
                 except ValueError:
                     for row in reader:
-                        self.process_row(row, args)
+                        self.process_row(row, args, currencies)
 
         except FileNotFoundError:
             print(f"Plik {args.filename} nie istnieje.", file=sys.stderr)
@@ -86,7 +86,11 @@ class Console:
         except Exception as e:
             print(f"Wystąpił błąd podczas odczytu pliku: {e}", file=sys.stderr)
 
-    def process_row(self, row, args):
+    def process_row(self, row, args, currencies):
+        if row[4].upper() not in currencies:
+            print(f"Pomijanie waluty: {row[4]} (dozwolone waluty to: {currencies})")
+            return
+
         invoice = Invoice(row[0], row[1], row[2])
         payment = Payment(row[3], row[4], row[5])
         result = self.calculator.calculate(invoice, payment)

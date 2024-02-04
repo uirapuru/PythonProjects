@@ -18,9 +18,11 @@ class Calculator:
 
         return {
             "amount_in_pln_to_pay": abs(round(difference, 2)),
+            "invoice_date": invoice.date,
             "invoice_amount": invoice.amount,
             "invoice_currency": invoice.currency,
             "invoice_rate_to_pln": invoice_rate,
+            "payment_date": payment.date,
             "payment_amount": payment.amount,
             "payment_currency": payment.currency,
             "payment_rate_to_pln": payment_rate

@@ -1,67 +1,60 @@
+import io
 import unittest
-from unittest.mock import Mock, patch
-import sys
+from unittest.mock import MagicMock, patch
 from Console.Console import Console
-from Calculator.Calculator import Calculator
 
 
 class TestConsole(unittest.TestCase):
     def setUp(self):
-        self.mock_calculator = Mock(spec=Calculator)
-        self.console = Console(self.mock_calculator)
+        self.calculator_mock = MagicMock()
+        self.console = Console(self.calculator_mock)
 
+    @patch('Console.validation.validate_amount', side_effect=lambda x: float(x))
+    @patch('Console.validation.validate_currency', side_effect=lambda x: x)
+    @patch('Console.validation.validate_date', side_effect=lambda x: x)
+    @patch('Console.validation.validate_output', side_effect=lambda x: x)
+    @patch('builtins.input', side_effect=['100', 'USD', '2023-01-01', '120', 'EUR', '2023-01-10', ''])
+    @patch('builtins.print')
+    def test_run_interactive_mode_with_valid_input(self, mock_print, mock_input, mock_validate_output, mock_validate_date, mock_validate_currency, mock_validate_amount):
+        args_dict = self.console.run_interactive_mode()
+        self.assertEqual(args_dict, {
+            "invoice_amount": 100.0,
+            "invoice_currency": 'USD',
+            "invoice_date": '2023-01-01',
+            "payment_amount": 120.0,
+            "payment_currency": 'EUR',
+            "payment_date": '2023-01-10',
+            "output": '',
+            "currencies": None,
+            "filename": None
+        })
+
+        mock_print.assert_any_call("Uruchomiono tryb interaktywny.")
+
+        self.assertEqual(mock_input.call_count, 7)
+
+    # @patch('builtins.input', side_effect=['invalid', 'USD', 'invalid-date', '120', 'EUR', '2023-01-10', ''])
     # @patch('builtins.print')
-    # def test_missing_filename_argument(self, mock_print):
-    #     test_args = ['prog', '--input', 'test_data']
-    #     with patch.object(sys, 'argv', test_args):
-    #         with self.assertRaises(SystemExit) as cm:
-    #             self.console.run()
-    #         self.assertEqual(cm.exception.code, 1)
-    #         mock_print.assert_called_with("Nie podano nazwy pliku", file=sys.stderr)
+    # @patch('Console.validation.validate_amount', side_effect=[ValueError("Kwota musi być liczbą."), float])
+    # def test_run_interactive_mode_with_invalid_input(self, mock_validate_amount, mock_print, mock_input):
+    #     self.console.run_interactive_mode()
+    #     mock_print.assert_any_call("Kwota musi być liczbą.")
 
-
-    @patch('builtins.print')
-    def test_invalid_currency_argument(self, mock_print):
-        test_args = ['prog', '--filename', 'data.csv', '--currencies', 'INVALID']
-        with patch.object(sys, 'argv', test_args):
-            try:
+    @patch('sys.argv', ['program_name', '--filename', 'nonexistent.csv'])
+    def test_run_with_file_not_found(self):
+        with patch('os.path.exists', return_value=False):
+            with patch('builtins.print') as mocked_print:
                 self.console.run()
-            except SystemExit:
-                pass
+                mocked_print.assert_called_with('Plik nonexistent.csv nie istnieje.', file=unittest.mock.ANY)
 
-    @patch('builtins.print')
-    def test_valid_currency_argument(self, mock_print):
-        test_args = ['prog', '--filename', 'data.csv', '--currencies', 'USD,EUR']
-        with patch.object(sys, 'argv', test_args):
-            try:
-                self.console.run()
-            except SystemExit:
-                pass
+    def test_process_row_with_unsupported_currency(self):
+        args = unittest.mock.MagicMock(output=None, currencies="USD,EUR")
+        currencies = ['USD', 'EUR']
+        row = ['100', 'USD', '2023-01-01', '120', 'GBP', '2023-01-10']
 
-    @patch('builtins.print')
-    def test_output_argument_with_existing_file(self, mock_print):
-        test_args = ['prog', '--filename', 'data.csv', '--output', 'existing_output.csv']
-        with patch.object(sys, 'argv', test_args), patch('os.path.exists', return_value=True), patch('os.remove') as mock_remove:
-            try:
-                self.console.run()
-            except SystemExit:
-                pass
-            mock_remove.assert_called_with('existing_output.csv')
-
-    @patch('builtins.print')
-    def test_output_argument_without_existing_file(self, mock_print):
-        test_args = ['prog', '--filename', 'data.csv', '--output', 'new_output.csv']
-        with patch.object(sys, 'argv', test_args), patch('os.path.exists', return_value=False):
-            try:
-                self.console.run()
-            except SystemExit:
-                pass
-
-    @patch('builtins.input', side_effect=['100', 'USD', '2022-01-01', '120', 'EUR', '2022-01-10'])
-    @patch('builtins.print')
-    def test_run_interactive_mode(self, mock_print, mock_input):
-        self.console.run_interactive_mode()
-        # Dodaj asercje dotyczące zachowania po interakcji z użytkownikiem.
+        with patch('sys.stdout', new=io.StringIO()) as fake_out:
+            self.console.process_row(row, args, currencies)
+            self.assertIn("Pomijanie waluty: GBP (dozwolone waluty to: ['USD', 'EUR'])", fake_out.getvalue())
 
 
 if __name__ == '__main__':

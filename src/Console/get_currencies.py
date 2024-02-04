@@ -8,7 +8,7 @@ def get_currencies(currency_arg):
         currencies = currency_arg.split(',')
         return [Currency[c].value for c in currencies if c in Currency.__members__]
     else:
-        currency_data = os.environ.get('CURRENCY')
+        currency_data = os.environ.get('CURRENCIES')
         if currency_data:
             currencies = currency_data.split(',')
             return [Currency[c].value for c in currencies if c in Currency.__members__]
